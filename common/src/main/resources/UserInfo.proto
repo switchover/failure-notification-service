@@ -1,0 +1,21 @@
+syntax = "proto3";
+package com.github.switchover.failure.common.rpc;
+
+service UserInfo {
+    rpc getUserList(NicknameOrTeam) returns (UserList);
+}
+
+message NicknameOrTeam {
+    repeated string name = 1;
+}
+
+message User {
+    string nickname = 1;
+    string serviceType = 2;
+    string token = 3;
+    string target = 4;
+}
+
+message UserList {
+    repeated User user = 1;
+}

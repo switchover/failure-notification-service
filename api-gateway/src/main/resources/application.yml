@@ -1,0 +1,32 @@
+server:
+  port: 18080
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: group-service
+          uri: http://127.0.0.1:18081
+          predicates:
+            - Path=/v1/groups/**
+        - id: alert-service
+          uri: http://127.0.0.1:18082
+          predicates:
+            - Path=/v1/alerts
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  cloud:
+    gateway:
+      routes:
+        - id: group-service
+          uri: http://group-service:18081
+          predicates:
+            - Path=/v1/groups/**
+        - id: alert-service
+          uri: http://alert-service:18082
+          predicates:
+            - Path=/v1/alerts

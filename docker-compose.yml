@@ -1,0 +1,62 @@
+version: '3.4'
+services:
+  rabbitmq:
+    image: rabbitmq:3.9.14-management
+    ports:
+      - "15672:15672"
+      - "5671:5671"
+      - "5672:5672"
+
+  api-gateway:
+    image: switchover/failure-api-gateway:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    ports:
+      - "18080:18080"
+
+  group-service:
+    image: switchover/failure-group-service:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: group-service/Dockerfile
+    ports:
+      - "18081:18081"
+      - "18090:18090"
+    depends_on:
+      - api-gateway
+
+  alert-service:
+    image: switchover/failure-alert-service:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: alert-service/Dockerfile
+    ports:
+      - "18082:18082"
+    depends_on:
+      - rabbitmq
+      - group-service
+      - api-gateway
+
+  alert-sender:
+    image: switchover/failure-alert-sender:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: alert-sender/Dockerfile
+    ports:
+      - "18083:18083"
+    depends_on:
+      - rabbitmq
+      - mockup-service
+
+  mockup-service:
+    image: switchover/failure-mockup-service:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: mockup-service/Dockerfile
+    ports:
+      - "18084:18084"
+
+networks:
+  our_net:
+    driver: bridge
