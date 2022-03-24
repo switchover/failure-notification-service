@@ -84,16 +84,16 @@ Rest API(`/v1/alert`)를 통해 실제 알람 전송 요청을 처리하며 다�
 
 ## 2.3 API 명세
 ### 1) group-service Rest API 제공 부분
-| URL                                | Method | Description           | Response Codes |
-|------------------------------------|--------|-----------------------|----------------|
-| `/v1/groups`                       | GET    | 전체 Group 리스트 조회       | `200`          |
-| `/v1/groups/{id}`                  | GET    | 개별 Group 조회           | `200` or `404` |
-| `/v1/groups`                       | POST   | Group 생성              | `201` or `400` |
-| `/v1/groups/{id}`                  | PUT    | Group 업데이트            | `200` or `404` |
-| `/v1/groups/{id}`                  | DELETE | Group 삭제              | `200` or `404` |
-| `/v1/groups/{id}/users`            | GET    | 개별 Group에 대한 User 리스트 | `200` or `404` |
-| `/v1/groups/{id}/users`            | POST   | 개별 Group에 대한 User 등록  | `201` or `404` |
-| `/v1/groups/{id}/users/{nickname}` | DELETE | 개별 Group에 대한 User 삭제  | `200` or `404` |
+| URL                                | Method | Description           | Response Codes                       |
+|------------------------------------|--------|-----------------------|--------------------------------------|
+| `/v1/groups`                       | GET    | 전체 Group 리스트 조회       | `200`                                |
+| `/v1/groups/{id}`                  | GET    | 개별 Group 조회           | `200` or `404`                       |
+| `/v1/groups`                       | POST   | Group 생성              | `201`(created) or `400`(bad request) |
+| `/v1/groups/{id}`                  | PUT    | Group 업데이트            | `200` or `404`                       |
+| `/v1/groups/{id}`                  | DELETE | Group 삭제              | `200` or `404`                       |
+| `/v1/groups/{id}/users`            | GET    | 개별 Group에 대한 User 리스트 | `200` or `404`                       |
+| `/v1/groups/{id}/users`            | POST   | 개별 Group에 대한 User 등록  | `201`(created) or `404`              |
+| `/v1/groups/{id}/users/{nickname}` | DELETE | 개별 Group에 대한 User 삭제  | `200` or `404`                       |
 
 ※ 공통 응답 코드 : `500`(`Internal Server Error`)
 
@@ -197,7 +197,7 @@ POST `/v1/alerts`
 }
 ```
 
-## 2.4 OSS 사용 내역
+## 2.4 주요 OSS(Open Source Software) 사용 내역
 - Spring Cloud Gateway (v3.0.5)
   - 목적 : API Gateway 활용
   - 주요 특징 : 다양한 routing 지정, Path Rewriting 기능, Circuit Breaker 및 Rate Limiting 기능 제공
