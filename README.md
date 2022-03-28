@@ -322,6 +322,7 @@ public enum MessengerType {
 ## 4.1 추후 고려사항
 - Swagger(Open API)를 통한 Rest API 명세화
 - 테스트 케이스 보완
+- logging, metrics & tracing
 
 ## 4.2 적용된 주요 기술
 ### 1) 실행 환경 부분
