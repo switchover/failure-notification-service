@@ -7,23 +7,23 @@
 알림 대상에게 장애에 대한 알림 정보를 제공하는 서비스로서
 - 다량의 알림 전송을 효율적으로 처리할 수 있고 성능(performance)를 보장
 - 여러 장애 발생 시에도 전반적인 서비스를 정상적으로 처리할 수 있는 가용성(availability)을 확보
-- 여러 외부 메시지 전송 외부 서비스로 확장을 효율저으로 할 수 잇는 변경용이성(modifiability) 제공
+- 여러 외부 메시지 전송 외부 서비스로 확장을 효율적으로 할 수 있는 변경용이성(modifiability) 제공
 하기 위한 아키텍처 및 시스템을 확보하고자 합니다.
 
 ### 1.2 아키텍처 설계
 시스템이 요구하는 여러 품질 요구사항에 대하여 다음과 같이 아키텍처를 설계합니다.
 
 1) (가용성) 서비스 요청에 대한 부하를 분산하고, 개별 서비스별 요청량에 따라 손쉽게 확장(scale-out)할 수 있도록, **마이크로서비스(microservice) 아키텍처** 및 **API Gateway**를 통해 외부로 API를 제공합니다.
-2) (성능) 내부 마이크로서비스 간 통신은 텍스트 기반의 Rest API가 아닌, 바이러니 기반의 **gRPC 통신**을 활용합니다.
-3) (성능 및 확장성) 실제 알림 전송 부분(Alert Send Service)에 외부 서비스 확장성 및 전송량 극대화를 위한 **메시지 큐(message queue)**를 활용한 이벤트 기반 아키텍처(event-driven architecture)로 구성됩니다.
+2) (성능) 내부 마이크로서비스 간 통신은 텍스트 기반의 Rest API가 아닌, 바이너리 기반의 **gRPC 통신**을 활용합니다.
+3) (성능 및 확장성) 실제 알림 전송 부분(Alert Send Service)에 외부 서비스 확장성 및 전송량 극대화를 위해서 **메시지 큐(message queue)**를 활용한 이벤트 기반 아키텍처(event-driven architecture)로 구성됩니다.
 4) (신뢰성) 외부 서비스 장애에 대한 전파를 방지하고 처리량 제어를 위한 기능(**circuit breaker & rate limit**)을 제공합니다.
 
-## 2. 시스틈 구성
+## 2. 시스템 구성
 ### 2.1 사용자 정보 및 알림 그룹 데이터 모델
 ![DB Schema](./guide/DBSchema.png)
 - 사용자(users) 정보 : 내부 ID 및 nickname으로 구성
   - nickname에 유일성(unique) 보장 : `unique index`
-- 사용자 메신저(users_messengers) 정보 : 사용자별 연계된 외부 서비스 접근 토큰(access token)과 대상(target) 정보로 궝
+- 사용자 메신저(users_messengers) 정보 : 사용자별 연계된 외부 서비스 접근 토큰(access token)과 대상(target) 정보로 구성
   - 하나의 사용자에 대하여 여러 외부 서비스를 지정할 있도록 구성(1:N)
 - 알림 그룹(groups) 정보 : 내부 ID 및 groupname으로 구성
   - groupname에 유일성(unique) 보장 : `unique index`
@@ -36,7 +36,7 @@
 
 ### 2.2 세부 서비스 구성
 #### 1) api-gateway
-Spring Cloud Gateway를 기반으로 구성되며, 기본적으로 다음과 같은 기본 설정을 갖습니다.
+Spring Cloud Gateway를 기반으로 구성되며, 다음과 같은 기본 설정을 갖습니다.
 
 | 설정                    | 구성                  |
 |-----------------------|---------------------|
@@ -228,7 +228,7 @@ $> ./mvnw clean package
 ```
 
 ## 3.2 컨테이너 기반 빌드 및 실행
-본 프로젝트는 docker 기반으로 컨테이너화되어 있으며, 다음같이 `docker-compose`를 통해 쉽게 이미지를 빌들 할 수 있습니다.
+본 프로젝트는 docker 기반으로 컨테이너화되어 있으며, 다음같이 `docker-compose`를 통해 쉽게 이미지를 빌드 할 수 있습니다.
 ```shell
 $> cd [failure-notification-service directory]
 $> docker-compose build
@@ -241,7 +241,7 @@ $> docker-compose build
 $> docker-compose up -d
 ```
 
-이후 다음가 같이 `curl`을 통해 테스트를 수행할 수 있습니다. (내부적으로 테스트 데이터 포함)
+이후 다음 `curl` 명령을 통해 테스트를 수행할 수 있습니다. (내부적으로 테스트 데이터 포함)
 ```shell
 $> curl -X POST -H "Content-Type: application/json" \
 -d "{ \
@@ -297,10 +297,11 @@ failure-notification-service-mockup-service-1  | }
 SRP(Single Responsibility Principle)에 따라 명확한 하나의 역할을 수행하는 클래스로 구성되었으며,
 DRY(Don't Repeat Yourself) 원칙에 따라 코드 뿐만 아니라, maven 설정 등도 중복이 없도록 구성되었습니다.
 
-외부 서비스를 손쉽게 추가하기 위해
+외부 서비스를 손쉽게 추가하기 위한
 [`MessengerServiceFactory`](./alert-sender/src/main/java/com/github/switchover/failure/sender/service/MessengerServiceFactory.java)를 통해,
 OCP(Open-Closed Principal)을 만족합니다.
-※ 다음가 같은 인터페이스를 구현한 `@Component` 또는 `@Service`만 생성하고 해당 `MessengerType`만 정의하면 기존 코드 수정 없이 외부 서비스 추가 가능
+
+※ 다음과 같은 인터페이스를 구현한 `@Component` 또는 `@Service`만 생성하고 해당 `MessengerType`만 정의하면 기존 코드 수정 없이 외부 서비스 추가 가능
 ```java
 public interface MessengerService {
     MessengerType getMessengerType();
